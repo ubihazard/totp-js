@@ -1,0 +1,120 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>JS OTP</title>
+<style>
+body {
+  margin: 4em auto;
+  font-family: "Helvetica Neue", Helvetica, Arial, Ubuntu, sans-serif;
+}
+
+#sec {
+  border-bottom: 1px #000 dashed;
+}
+</style>
+</head>
+
+<body style="width: 45em;">
+<h1 id="jsotp-demo">JS OTP</h1>
+<p>JavaScript implementation of two-factor authentication.</p>
+
+<hr>
+<p id="secret">Secret: <span id="sec"></span></p>
+<h2 id="code-1">000000</h2>
+<p id="ticker">0</p>
+
+<!--
+<hr>
+<p id="secret-2">Secret: </p>
+<h2 id="code-2">HOTP code</h2>
+<p>Counter value is: <span id="counter">0</span></p>
+<button onclick="requestHotp()">Get new code</button>
+-->
+
+<script src="otp.js"></script>
+<script>
+const $ = function(sel) {
+  return document.querySelector(sel);
+};
+
+let secret = "23TplPdS46Juzcyx"
+$('#sec').innerText = secret;
+$('#sec').addEventListener("click", (ev) => {
+  const sec = prompt("New secret", secret);
+
+  if (sec !== null) {
+    secret = sec.toUpperCase();
+    $('#sec').innerHTML = secret;
+  }
+
+  updateTotp(secret, $('#code-1'));
+});
+
+let totp = new jsOTP.totp();
+let code = totp.getOtp(secret);
+let hotp = new jsOTP.hotp();
+let doge = hotp.getOtp(secret, 0);
+
+//console.log(code);
+//console.log(doge);
+
+let updateTicker = function(tick, el) {
+  el.innerText = tick;
+}
+let updateTotp = function(secret, el) {
+  el.innerText = totp.getOtp(secret);
+}
+
+updateTotp(secret, $('#code-1'));
+
+let timeLoop = function() {
+  let epoch = Math.round(new Date().getTime() / 1000.0);
+  let countDown = 30 - (epoch % 30);
+  updateTicker(countDown, $('#ticker'));
+  if (epoch % 30 == 0) updateTotp(secret, $('#code-1'));
+}
+
+setInterval(timeLoop, 1000);
+
+/*
+var counter = 0;
+var secret2 = "abcdefghijklmnop";
+$('#secret-2').innerText = "Secret: " + secret2;
+$('#counter').innerText = counter;
+
+var updateHotp = function(secret, counter, el) {
+  el.innerText = hotp.getOtp(secret, counter);
+}
+var updateCounter = function(counter, el) {
+  el.innerText = counter;
+}
+var requestHotp = function() {
+  updateHotp(secret2, counter, $('#code-2'));
+  updateCounter(++counter, $('#counter'));
+}
+*/
+
+//TODO implement this. The problem is that not all secrets are valid...
+/*
+getSecret = function() {
+  var secret = prompt("Enter secret");
+  $('#secret-3').innerHTML = secret;
+  if(totpManager.accounts.length === 3)
+    totpManager.accounts.pop();
+  totpManager.add(secret, $('#code-3'), $('#ticker-3'));
+  $('#qr-3').src = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=200x200&chld=M|0&cht=qr&chl=otpauth://totp/user@host.com%3Fsecret%3D' + secret;
+}
+*/
+</script>
+
+<!--
+<hr>
+<button type="button" onclick="getSecret()">Try your own secret</button>
+<p id="secret-3"></p>
+<h2 id="code-3"></h2>
+<p id="ticker-3"></p>
+<br>
+<p>To verify it, you can scan the following QR code with your Google Authenticator app. The codes on this page and your app should match.</p>
+<img id="qr-3"></img>
+-->
+
+</body></html>
